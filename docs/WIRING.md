@@ -1,16 +1,17 @@
 # Wiring
 
 Only three wires are needed: the two paddle contacts and their common ground.
-The XIAO's internal pull-up resistors keep the inputs HIGH; closing a paddle
-contact pulls the input to GND.
+The board's internal pull-up resistors keep the inputs HIGH; closing a paddle
+contact pulls the input to GND. This applies to both supported boards, the
+Seeed Studio XIAO SAMD21 and the Waveshare RP2040-Zero.
 
 ## Connections
 
-| 3.5 mm jack   | Paddle      | XIAO pin |
-|---------------|-------------|----------|
-| **Tip**       | Dit         | **D1**   |
-| **Ring**      | Dah         | **D2**   |
-| **Sleeve**    | Common      | **GND**  |
+| 3.5 mm jack   | Paddle      | XIAO pin | RP2040-Zero pin |
+|---------------|-------------|----------|-----------------|
+| **Tip**       | Dit         | **D1**   | **GP2**         |
+| **Ring**      | Dah         | **D2**   | **GP3**         |
+| **Sleeve**    | Common      | **GND**  | **GND**         |
 
 This follows the usual convention for paddles (and the vband adapter):
 tip = dit, ring = dah, sleeve = common. If your paddle is wired the other way
@@ -34,6 +35,31 @@ Top view, USB‑C connector at the top:
       D2 ◄── jack RING (dah)
 ```
 
+## Waveshare RP2040-Zero pinout
+
+The RP2040-Zero has several GND pads and its GPIO pads are labelled on the
+silkscreen (`GP0`, `GP1`, `GP2`, …). Use the labels printed on your board, and
+check them against the
+[Waveshare pinout](https://www.waveshare.com/wiki/RP2040-Zero), because clones
+differ in layout details.
+
+| Function        | Pad        | Notes                                    |
+|-----------------|------------|------------------------------------------|
+| Dit (jack tip)  | `GP2`      | Change with `PIN_DIT` in the sketch      |
+| Dah (jack ring) | `GP3`      | Change with `PIN_DAH` in the sketch      |
+| Common (sleeve) | any `GND`  | Use the GND pad closest to GP2/GP3       |
+
+GP2 and GP3 sit next to each other on the edge of the board, so the jack
+wires stay short. Any other free GPIO works too (GP0–GP15, GP26–GP29): change
+`PIN_DIT` / `PIN_DAH` accordingly.
+
+The board has two small buttons: **BOOT** (hold while connecting USB to enter
+the bootloader) and **RESET**. There is no RST pad pair to short as on the
+XIAO. Leave `5V` and `3V3` unconnected.
+
+The on-board LED is a WS2812 RGB LED on `GP16`. It is not a plain LED, so do
+not use that pad for anything else.
+
 ## 3.5 mm plug and jack
 
 ```
@@ -47,11 +73,11 @@ Top view, USB‑C connector at the top:
 
 Small TRS breakout boards are usually labelled for audio:
 
-| Board label           | Contact | Connect to |
-|-----------------------|---------|------------|
-| `L` / `LEFT` / `T`    | Tip     | D1         |
-| `R` / `RIGHT` / `R1`  | Ring    | D2         |
-| `G` / `GND` / `S`     | Sleeve  | GND        |
+| Board label           | Contact | Connect to (XIAO / RP2040-Zero) |
+|-----------------------|---------|---------------------------------|
+| `L` / `LEFT` / `T`    | Tip     | D1 / GP2                        |
+| `R` / `RIGHT` / `R1`  | Ring    | D2 / GP3                        |
+| `G` / `GND` / `S`     | Sleeve  | GND / GND                       |
 
 Some boards and bare jacks have extra pins (switch contacts that open when a
 plug is inserted, or a second ring pin on TRRS jacks). Leave those
@@ -75,30 +101,31 @@ cable is long or you want some protection against static discharge, add a
 **220 Ω … 1 kΩ** resistor in series with each input:
 
 ```
-   jack TIP  ──[ 220 Ω ]── D1
-   jack RING ──[ 220 Ω ]── D2
+   jack TIP  ──[ 220 Ω ]── D1  (RP2040-Zero: GP2)
+   jack RING ──[ 220 Ω ]── D2  (RP2040-Zero: GP3)
    jack SLEEVE ──────────── GND
 ```
 
-The internal pull-ups (≈ 40 kΩ) are much larger, so the logic levels are not
-affected.
+The internal pull-ups (≈ 40 kΩ on the XIAO, ≈ 50–80 kΩ on the RP2040) are
+much larger, so the logic levels are not affected.
 
 ## Do not
 
 - **Do not** connect 5V or 3V3 to the jack. The inputs only need to be pulled
   to GND by the paddle contacts.
 - **Do not** connect the output of an external keyer, transceiver or any
-  circuit that drives a voltage. The SAMD21 is a 3.3 V part and its pins are
-  **not 5 V tolerant**.
+  circuit that drives a voltage. The SAMD21 and the RP2040 are 3.3 V parts and
+  their pins are **not 5 V tolerant**.
 - Avoid the XIAO's back-side pads (battery, SWD) unless you know what you are
   doing.
 
 ## Example build
 
-A compact build without an enclosure: a small 3.5 mm jack mounted on the back
-of the XIAO, in line with the USB‑C connector, three short wires to D1, D2
-and GND, and the whole thing wrapped in clear heat-shrink tubing. The tubing
-keeps the LEDs visible.
+A compact build without an enclosure (shown with the XIAO): a small 3.5 mm
+jack mounted on the back of the board, in line with the USB‑C connector,
+three short wires to D1, D2 and GND, and the whole thing wrapped in clear
+heat-shrink tubing. The tubing keeps the LEDs visible. The RP2040-Zero is
+about the same size and can be built the same way.
 
 ![Finished adapter, top side](images/adapter-top.jpg)
 
@@ -108,14 +135,15 @@ keeps the LEDs visible.
 
 - Glue or screw the jack to the enclosure so that plugging in does not stress
   the solder joints.
-- Leave the USB‑C connector and the RST pads reachable, or at least keep the
-  lid removable for firmware updates.
-- A small window or light pipe over the yellow LED is handy to see the
-  keying state.
+- Leave the USB‑C connector reachable, plus the RST pads (XIAO) or the BOOT
+  button (RP2040-Zero), or at least keep the lid removable for firmware
+  updates.
+- A small window or light pipe over the LED is handy to see the keying state.
 
 ## Quick test after wiring
 
-1. Plug in the paddle, then the USB cable. The yellow LED blinks once.
-2. Press dit: the yellow LED lights up. Same for dah.
+1. Plug in the paddle, then the USB cable. The LED blinks once (XIAO: yellow,
+   RP2040-Zero: blue).
+2. Press dit: the LED lights up (RP2040-Zero: green). Same for dah.
 3. Open <https://w3c.github.io/uievents/tools/key-event-viewer.html> and
    check: dit → `ControlLeft`, dah → `ControlRight`.

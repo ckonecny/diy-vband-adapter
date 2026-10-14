@@ -1,15 +1,22 @@
-// XIAO vband adapter
+// DIY VBAND Adapter - Waveshare RP2040-Zero version
 //
-// Turns a Seeed Studio XIAO SAMD21 into a USB keyboard that reports the two
-// contacts of a Morse paddle (or a straight key) as key presses, the same way
-// the commercial vband USB adapter does:
+// Turns a Waveshare RP2040-Zero (or a compatible clone) into a USB keyboard
+// that reports the two contacts of a Morse paddle (or a straight key) as key
+// presses, the same way the commercial vband USB adapter does:
 //
 //   dit (jack tip)  -> Left Ctrl
 //   dah (jack ring) -> Right Ctrl
 //
 // The keyer logic (iambic A/B, ultimatic, bug, ...) lives in the application
-// (https://hamradio.solutions/vband/, Next CW Trainer, ...). This firmware
-// only mirrors the contact state, with a short debounce and no added delay.
+// (https://hamradio.solutions/vband/, APEX CW, ...). This firmware only
+// mirrors the contact state, with a short debounce and no added delay.
+//
+// This is the sibling of firmware/xiao_samd21/. The logic is identical; only
+// the pins, the board core and the LED handling differ.
+//
+// Build with the Arduino-Pico core by Earle Philhower. Its built-in Keyboard
+// library is used (do NOT install the "Keyboard" library by Arduino for this
+// board). The only extra library is Adafruit NeoPixel for the on-board RGB LED.
 //
 // See README.md for wiring and configuration.
 
@@ -19,12 +26,13 @@
 // Configuration (edit here or override with -D build flags)
 // ---------------------------------------------------------------------------
 
-// Input pins. The jack sleeve goes to GND, a closed contact pulls the pin LOW.
+// Input pins (GPIO numbers, as printed on the board). The jack sleeve goes to
+// GND, a closed contact pulls the pin LOW.
 #ifndef PIN_DIT
-#define PIN_DIT 1   // XIAO D1 <- jack tip
+#define PIN_DIT 2   // GP2 <- jack tip
 #endif
 #ifndef PIN_DAH
-#define PIN_DAH 2   // XIAO D2 <- jack ring
+#define PIN_DAH 3   // GP3 <- jack ring
 #endif
 
 // Key mapping. Ctrl keys are independent of the host keyboard layout, which is
@@ -57,11 +65,40 @@
 #define STUCK_MS 10000
 #endif
 
+// On-board LED. The RP2040-Zero has a WS2812 RGB LED on GP16 instead of a
+// plain LED. Set USE_RGB_LED to 0 to leave it dark (and drop the NeoPixel
+// library). LED_BRIGHTNESS is 0..255; the LED is very bright at full power.
+#ifndef USE_RGB_LED
+#define USE_RGB_LED 1
+#endif
+#ifndef PIN_RGB_LED
+#define PIN_RGB_LED 16
+#endif
+#ifndef LED_BRIGHTNESS
+#define LED_BRIGHTNESS 20
+#endif
+
 // ---------------------------------------------------------------------------
 
-// The XIAO SAMD21 user LED (yellow, "L") is active LOW.
-const uint8_t LED_ON = LOW;
-const uint8_t LED_OFF = HIGH;
+#if USE_RGB_LED
+#include <Adafruit_NeoPixel.h>
+
+Adafruit_NeoPixel pixel(1, PIN_RGB_LED, NEO_GRB + NEO_KHZ800);
+const uint32_t LED_KEYING = 0x00FF00;  // green while a paddle is closed
+const uint32_t LED_READY = 0x0000FF;   // blue blink: ready / swapped
+const uint32_t LED_OFF = 0x000000;
+
+void setLed(uint32_t color) {
+  pixel.setPixelColor(0, color);
+  pixel.show();
+}
+#else
+const uint32_t LED_KEYING = 0;
+const uint32_t LED_READY = 0;
+const uint32_t LED_OFF = 0;
+
+void setLed(uint32_t) {}
+#endif
 
 struct Contact {
   uint8_t pin;
@@ -75,6 +112,8 @@ struct Contact {
 
 Contact dit = {PIN_DIT, KEY_DIT, false, false, false, false, 0};
 Contact dah = {PIN_DAH, KEY_DAH, false, false, false, false, 0};
+
+bool ledOn = false;
 
 bool readRaw(const Contact &c) {
   return digitalRead(c.pin) == LOW;
@@ -114,9 +153,9 @@ void update(Contact &c, uint32_t now) {
 
 void blink(uint8_t times) {
   for (uint8_t i = 0; i < times; i++) {
-    digitalWrite(LED_BUILTIN, LED_ON);
+    setLed(LED_READY);
     delay(120);
-    digitalWrite(LED_BUILTIN, LED_OFF);
+    setLed(LED_OFF);
     delay(120);
   }
 }
@@ -124,8 +163,11 @@ void blink(uint8_t times) {
 void setup() {
   pinMode(PIN_DIT, INPUT_PULLUP);
   pinMode(PIN_DAH, INPUT_PULLUP);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LED_OFF);
+#if USE_RGB_LED
+  pixel.begin();
+  pixel.setBrightness(LED_BRIGHTNESS);
+#endif
+  setLed(LED_OFF);
   delay(10); // let the pull-ups settle
 
   // Holding the dit paddle while plugging in USB swaps dit and dah until the
@@ -155,5 +197,12 @@ void loop() {
   uint32_t now = millis();
   update(dit, now);
   update(dah, now);
-  digitalWrite(LED_BUILTIN, (dit.reported || dah.reported) ? LED_ON : LED_OFF);
+
+  // Only touch the LED when the state changes: updating a WS2812 briefly
+  // blocks interrupts and there is no reason to do it on every loop pass.
+  bool keying = dit.reported || dah.reported;
+  if (keying != ledOn) {
+    ledOn = keying;
+    setLed(keying ? LED_KEYING : LED_OFF);
+  }
 }
