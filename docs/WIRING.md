@@ -9,8 +9,8 @@ Seeed Studio XIAO SAMD21 and the Waveshare RP2040-Zero.
 
 | 3.5 mm jack   | Paddle      | XIAO pin | RP2040-Zero pin |
 |---------------|-------------|----------|-----------------|
-| **Tip**       | Dit         | **D1**   | **GP2**         |
-| **Ring**      | Dah         | **D2**   | **GP3**         |
+| **Tip**       | Dit         | **D1**   | **GP1**         |
+| **Ring**      | Dah         | **D2**   | **GP2**         |
 | **Sleeve**    | Common      | **GND**  | **GND**         |
 
 This follows the usual convention for paddles (and the vband adapter):
@@ -45,11 +45,11 @@ differ in layout details.
 
 | Function        | Pad        | Notes                                    |
 |-----------------|------------|------------------------------------------|
-| Dit (jack tip)  | `GP2`      | Change with `PIN_DIT` in the sketch      |
-| Dah (jack ring) | `GP3`      | Change with `PIN_DAH` in the sketch      |
-| Common (sleeve) | any `GND`  | Use the GND pad closest to GP2/GP3       |
+| Dit (jack tip)  | `GP1`      | Change with `PIN_DIT` in the sketch      |
+| Dah (jack ring) | `GP2`      | Change with `PIN_DAH` in the sketch      |
+| Common (sleeve) | any `GND`  | Use the GND pad closest to GP1/GP2       |
 
-GP2 and GP3 sit next to each other on the edge of the board, so the jack
+GP1 and GP2 sit next to each other on the edge of the board, so the jack
 wires stay short. Any other free GPIO works too (GP0–GP15, GP26–GP29): change
 `PIN_DIT` / `PIN_DAH` accordingly.
 
@@ -75,8 +75,8 @@ Small TRS breakout boards are usually labelled for audio:
 
 | Board label           | Contact | Connect to (XIAO / RP2040-Zero) |
 |-----------------------|---------|---------------------------------|
-| `L` / `LEFT` / `T`    | Tip     | D1 / GP2                        |
-| `R` / `RIGHT` / `R1`  | Ring    | D2 / GP3                        |
+| `L` / `LEFT` / `T`    | Tip     | D1 / GP1                        |
+| `R` / `RIGHT` / `R1`  | Ring    | D2 / GP2                        |
 | `G` / `GND` / `S`     | Sleeve  | GND / GND                       |
 
 Some boards and bare jacks have extra pins (switch contacts that open when a
@@ -101,8 +101,8 @@ cable is long or you want some protection against static discharge, add a
 **220 Ω … 1 kΩ** resistor in series with each input:
 
 ```
-   jack TIP  ──[ 220 Ω ]── D1  (RP2040-Zero: GP2)
-   jack RING ──[ 220 Ω ]── D2  (RP2040-Zero: GP3)
+   jack TIP  ──[ 220 Ω ]── D1  (RP2040-Zero: GP1)
+   jack RING ──[ 220 Ω ]── D2  (RP2040-Zero: GP2)
    jack SLEEVE ──────────── GND
 ```
 

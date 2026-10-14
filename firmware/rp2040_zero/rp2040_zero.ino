@@ -29,10 +29,10 @@
 // Input pins (GPIO numbers, as printed on the board). The jack sleeve goes to
 // GND, a closed contact pulls the pin LOW.
 #ifndef PIN_DIT
-#define PIN_DIT 2   // GP2 <- jack tip
+#define PIN_DIT 1   // GP1 <- jack tip (same number as XIAO D1)
 #endif
 #ifndef PIN_DAH
-#define PIN_DAH 3   // GP3 <- jack ring
+#define PIN_DAH 2   // GP2 <- jack ring (same number as XIAO D2)
 #endif
 
 // Key mapping. Ctrl keys are independent of the host keyboard layout, which is
