@@ -6,8 +6,8 @@ it shows up as a USB keyboard:
 
 | Paddle contact | Jack    | XIAO pin | RP2040-Zero pin | Key sent      |
 |----------------|---------|----------|-----------------|---------------|
-| Dit            | Tip     | D1       | GP2             | Left Ctrl     |
-| Dah            | Ring    | D2       | GP3             | Right Ctrl    |
+| Dit            | Tip     | D1       | GP1             | Left Ctrl     |
+| Dah            | Ring    | D2       | GP2             | Right Ctrl    |
 | Common         | Sleeve  | GND      | GND             | —             |
 
 Two boards are supported, each with its own sketch:
@@ -246,8 +246,8 @@ All options are `#define`s at the top of the sketch
 
 | Option          | Default          | Meaning                                    |
 |-----------------|------------------|--------------------------------------------|
-| `PIN_DIT`       | `1` (XIAO D1) / `2` (RP2040 GP2) | Input pin for the dit contact (jack tip)   |
-| `PIN_DAH`       | `2` (XIAO D2) / `3` (RP2040 GP3) | Input pin for the dah contact (jack ring)  |
+| `PIN_DIT`       | `1` (XIAO D1, RP2040 GP1) | Input pin for the dit contact (jack tip)   |
+| `PIN_DAH`       | `2` (XIAO D2, RP2040 GP2) | Input pin for the dah contact (jack ring)  |
 | `KEY_DIT`       | `KEY_LEFT_CTRL`  | Key sent for dit                           |
 | `KEY_DAH`       | `KEY_RIGHT_CTRL` | Key sent for dah                           |
 | `SWAP_PADDLES`  | `0`              | `1` swaps dit and dah                      |
