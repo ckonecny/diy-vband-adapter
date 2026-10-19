@@ -113,6 +113,12 @@ struct Contact {
 Contact dit = {PIN_DIT, KEY_DIT, false, false, false, false, 0};
 Contact dah = {PIN_DAH, KEY_DAH, false, false, false, false, 0};
 
+// Explicit prototypes: PlatformIO's .ino conversion would otherwise put the
+// generated ones above struct Contact.
+bool readRaw(const Contact &c);
+void report(Contact &c, bool down);
+void update(Contact &c, uint32_t now);
+
 bool ledOn = false;
 
 bool readRaw(const Contact &c) {
