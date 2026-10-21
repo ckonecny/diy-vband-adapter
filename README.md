@@ -15,10 +15,14 @@ Two boards are supported, each with its own sketch:
 | Board | Sketch | Notes |
 |-------|--------|-------|
 | [Seeed Studio XIAO SAMD21](https://www.seeedstudio.com/Seeeduino-XIAO-Arduino-Microcontroller-SAMD21-Cortex-M0+-p-4426.html) | [`firmware/xiao_samd21/`](firmware/xiao_samd21/xiao_samd21.ino) | Original build, yellow LED |
-| Waveshare RP2040-Zero (and clones) | [`firmware/rp2040_zero/`](firmware/rp2040_zero/rp2040_zero.ino) | Cheaper, USB‑C, flashing by drag & drop, RGB LED |
+| Waveshare RP2040-Zero (and clones) | [`firmware/rp2040_zero/`](firmware/rp2040_zero/rp2040_zero.ino) | Cheaper, USB‑C, BOOT button, RGB LED |
 
 Both behave the same; only the pins, the build setup and the LED differ.
 Any other board with native USB HID support can be adapted with little effort.
+
+**No build tools needed:** ready-made firmware for both boards is flashed by
+copying one file onto a USB drive; see
+[Quick start](#quick-start-flash-the-ready-made-firmware).
 
 This is the same key mapping as the commercial
 [vband USB adapter](https://hamradio.solutions/vband/), so it works with:
@@ -65,7 +69,42 @@ vband adapter.
 
 **Wiring:** see **[docs/WIRING.md](docs/WIRING.md)**.
 
-## Building and flashing: XIAO SAMD21
+## Quick start: flash the ready-made firmware
+
+You don't need Arduino, PlatformIO or any other software. Both boards have a
+bootloader that shows up as a USB drive; copying a `.uf2` file onto it
+flashes the board. This works the same on Windows, macOS, Linux and
+ChromeOS.
+
+1. Download the file for your board from the
+   [latest release](https://github.com/ckonecny/diy-vband-adapter/releases/latest):
+
+   | Board | Firmware |
+   |-------|----------|
+   | Waveshare RP2040-Zero (and clones) | [`diy-vband-rp2040-zero.uf2`](https://github.com/ckonecny/diy-vband-adapter/releases/latest/download/diy-vband-rp2040-zero.uf2) |
+   | Seeed Studio XIAO SAMD21 | [`diy-vband-xiao-samd21.uf2`](https://github.com/ckonecny/diy-vband-adapter/releases/latest/download/diy-vband-xiao-samd21.uf2) |
+
+2. Put the board into bootloader mode:
+   - **RP2040-Zero:** hold the **BOOT** button while plugging in USB (or
+     press **RESET** while holding **BOOT**). A drive named **RPI-RP2**
+     appears.
+   - **XIAO SAMD21:** plug in USB, then briefly short the two **RST** pads
+     next to the USB connector twice in quick succession (tweezers or a
+     piece of wire). The orange LED pulses and a drive named **Arduino**
+     appears. If it doesn't, try the double tap a bit faster or slower.
+3. Copy the `.uf2` file onto that drive. The drive disappears and the board
+   restarts with the adapter firmware. Done. Some systems complain that the
+   drive was ejected improperly; that's expected and harmless.
+
+The ready-made firmware uses the default settings: Left Ctrl for dit, Right
+Ctrl for dah. Dit and dah can be swapped without rebuilding (see
+[Swapping dit and dah](#swapping-dit-and-dah)). For other settings, build the
+firmware yourself as described below.
+
+New releases are built automatically by GitHub Actions when a version tag
+(`v1.0.0`, …) is pushed.
+
+## Building from source: XIAO SAMD21
 
 ### Arduino IDE
 
@@ -126,7 +165,7 @@ connector twice in quick succession. The orange LED pulses and the XIAO
 appears as a USB drive (**Arduino**) and a bootloader port. Upload again,
 or use the UF2 method above.
 
-## Building and flashing: Waveshare RP2040-Zero
+## Building from source: Waveshare RP2040-Zero
 
 The sketch uses the **Arduino-Pico** core by Earle Philhower and its built-in
 Keyboard library, plus *Adafruit NeoPixel* for the on-board RGB LED.
@@ -275,9 +314,8 @@ with every layout.
 - On macOS, Ctrl+click is a right click — avoid clicking while keying.
 - Both boards run on 3.3 V. Connect only passive paddle contacts to the inputs,
   never a keyer output or any voltage.
-- The RP2040-Zero sketch was checked against the Arduino-Pico core
-  (Keyboard library, pin and board definitions), but has not yet been tested on
-  real hardware. If you try it, please report your results.
+- The RP2040-Zero firmware has been tested on an RP2040-Zero clone. If you
+  try other clones, please report your results.
 
 ## Credits
 
